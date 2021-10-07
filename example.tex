@@ -1,0 +1,78 @@
+\documentclass{article}
+
+\usepackage{hilite}
+
+% an example of using hilite with mdframed or similar
+\usepackage{mdframed}
+
+
+% first, configure shellout. we need to provide a cache prefix, and a path to
+% the shell script helper (yeah i know, tex libraries can't find their own feet
+% without currfile hacks)
+\shelloutcacheprefix{shellout/\jobname}
+\shelloutnocachemode
+\shelloutbin{./shellout.sh}
+
+
+% select a theme. this enables use of the \hilitepalette command to select
+% colours from the palette, as well as defining the RG@fgcolor and RG@bgcolor
+% colour variables.
+\hilitestyle{magritte}
+
+\makeatletter
+\newmdenv[
+  middlelinecolor=RG@fgcolor
+  middlelinewidth=0.75pt,
+  font=\ttfamily,
+  rightmargin=8pt,
+  shadowsize=4pt,
+  backgroundcolor=RG@bgcolor,
+]{myexample}
+\makeatother
+
+% add surrounding commands to the hilite block environment. here we use
+% this command to make every hilite block be our custom mdframed box.
+\hiliteblockenv{\begin{myexample}}{\end{myexample}}
+% similar but for inline highlights
+\hiliteinlineenv{\ttfamily}{\relax}
+
+% OPTIONAL: override the rouge command to load custom lexers, themes, etc
+% \hiliterougecmd{rougify -r ./ruby/my_extensions.rb}
+\hiliterougecmd{rougify}
+
+
+% OPTIONAL: set a default language for {hilite} environments
+\hilitedefaultlang{magritte}
+
+% access any rouge palette colour using `RG@palette@magritte@palettename
+\def\RGP#1{RG@palette@magritte@#1}
+
+\begin{document}
+
+%%%%%%%%% UTIL %%%%%%%%%
+\def\withcursor#1{\texttt{\textbf{%
+  \fboxsep=0pt\colorbox{gray}{%
+    \parbox[c][\height][c]{0.61em}{%
+      \strut\textcolor{white}{#1}%
+    }%
+  }}%
+}}
+\def\cursormark{\withcursor{}}
+\def\prompt{\textasciitilde>}
+
+\title{Demo of text highlighting}
+\author{jneen}
+
+\maketitle
+
+\noindent Hello! Here is some highlighted code:
+
+\begin{hilite}[ruby]
+Rouge.highlight('LaTeX')
+\end{hilite}
+
+\noindent And you can also \hl[ruby]/puts "your highlighted code"/ inline! While this does depend on the \hl|-shell-escape| flag (and therefore is not usable on platforms like Overleaf where shelling out is not an option), we do generate cache files, so that TeX sources can be distributed without relying on \hl|-shell-escape|.
+
+See \hl|example.tex| for more info, or run \hl|make| in this repository to make the example.
+
+\end{document}

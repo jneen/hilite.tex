@@ -1,0 +1,81 @@
+\makeatletter
+%\usepackage{newverbs}
+
+\newwrite\shellout@out
+\def\shellout@writeout@start#1{%
+  \begingroup
+  \immediate\openout\shellout@out#1%
+  \let\do\@makeother\dospecials%
+  \catcode`\^^M\active%
+  \def\verbatim@processline{%
+    \immediate\write\shellout@out{\the\verbatim@line}}%
+}%
+
+\def\shellout@writeout@end{%
+  \immediate\closeout\shellout@out\endgroup%
+}%
+
+\newcounter{shellout@shell@id}
+\counterwithin{shellout@shell@id}{subsubsection}
+
+\def\shellout@setup#1{%
+  \stepcounter{shellout@shell@id}%
+  \gdef\shellout@shell@cmd{#1}%
+  \gdef\shellout@shell@infile{\theshelloutcacheprefix.\theshellout@shell@id.shellin.tmp}%
+  \gdef\shellout@shell@outfile{\theshelloutcacheprefix.\theshellout@shell@id.shellout.tex}%
+}
+
+\def\shellout@shell@start#1{%
+  \shellout@setup{#1}%
+  \shellout@writeout@start{\shellout@shell@infile}%
+}%
+
+\def\shellout@shell@perform{%
+  \ifx\shellout@cachemode 0%
+    \immediate\write18{\theshelloutbin'' \shellout@shell@infile'' \shellout@shell@outfile'' \shellout@shell@cmd''}%
+  \fi%
+  \immediate\input{\shellout@shell@outfile}%
+}
+
+\def\shellout@shell@end{%
+\shellout@writeout@end%
+\noindent\obeyspaces\shellout@shell@perform%
+}
+
+\def\shelloutone#1{%
+  \stepcounter{shellout@shell@id}%
+  \gdef\shellout@shell@cmd{#1}%
+  \gdef\shellout@shell@infile{/dev/null}%
+  \gdef\shellout@shell@outfile{\theshelloutcacheprefix.\theshellout@shell@id.shellout.tex}%
+  \shellout@shell@perform%
+}
+
+\def\shelloutcacheprefix#1{
+  \gdef\theshelloutcacheprefix{#1}
+}
+
+\gdef\theshelloutbin{shellout}
+\def\shelloutbin#1{
+  \gdef\theshelloutbin{#1}
+}
+
+\shelloutcacheprefix{\jobname}
+
+\def\shelloutcachemode{\let\shellout@cachemode1}%
+\def\shelloutnocachemode{\let\shellout@cachemode0}%
+\shelloutnocachemode%
+
+\newenvironment{shellout}[1]{
+  \begingroup
+  \@bsphack%
+  \shellout@shell@start{#1}%
+  \verbatim
+}{
+  \endverbatim%
+  \@esphack
+
+  \shellout@shell@end%
+  \endgroup
+}
+
+\makeatother

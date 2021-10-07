@@ -1,0 +1,68 @@
+\usepackage{shellout}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{newverbs}
+
+\makeatletter
+\gdef\rouge@bin{rougify}
+\def\hiliterougecmd#1{%
+  \gdef\rouge@bin{#1}%
+}
+
+\def\hilitestyle#1{
+  \gdef\thehilitestyle{#1}
+
+  \shelloutone{\rouge@bin'' style --tex #1''}%
+}
+
+\def\hilitepalette#1{RG@palette@\thehighlightstyle\ @#1}
+
+\def\hilite@defaultlang{text}
+\def\hilitedefaultlang#1{%
+  \def\hilite@defaultlang{#1}%
+}
+
+\newenvironment{hilite}[1][\hilite@defaultlang]{%
+\renewenvironment{RG*}{\hilite@block@start\color{RG@fgcolor}}{\hilite@block@end}%
+\begingroup%
+\gdef\rouge@lexer{#1}%
+\@bsphack%
+\shellout@shell@start{\rouge@bin'' -l \rouge@lexer'' --escape-with '<@' '@>' -f tex}%
+\verbatim@start%
+}{%
+\@esphack%
+\endgroup%
+\noindent\shellout@shell@end%
+}
+
+\newcommand\hl[1][\hilite@defaultlang]{% [
+  \begingroup
+  \gdef\thelexer{#1}%
+  \catcode`\^^M\active%
+  \Collectverb{\hl@}% @
+}
+% \def\hl#1{#1}
+\def\hl@#1{%
+  \shellout@setup{\rouge@bin'' -l \thelexer'' --escape-with '<@' '@>' -f tex}%
+  \immediate\openout\shellout@out\shellout@shell@infile%
+  \immediate\write\shellout@out{#1}%
+  \immediate\closeout\shellout@out%
+  \renewenvironment{RG*}{\hilite@inline@start\color{RG@fgcolor}}{\hilite@inline@end}%
+  \shellout@shell@perform%
+  \endgroup
+}
+
+\def\hilite@block@start{}
+\def\hilite@block@end{}
+
+\def\hiliteblockenv#1#2{
+  \def\hilite@block@start{#1}%
+  \def\hilite@block@end{#2}%
+}
+
+\def\hiliteinlineenv#1#2{
+  \def\hilite@inline@start{#1}%
+  \def\hilite@inline@end{#2}%
+}
+
+\makeatother
