@@ -2,7 +2,11 @@
 \noindent Hello! Here is some highlighted code:
 
 \begin{hilite}[ruby]
-Rouge.highlight('LaTeX')
+# yo this is ruby
+
+Rouge.highlight('LaTeX') # not real syntax lol
+
+puts "completely \" backslash \safe" # \\\\\\\\\
 \end{hilite}
 
 \noindent And you can also \hl[ruby]/puts "your highlighted code"/ inline!
